@@ -19,9 +19,14 @@
       <artifactId>jakarta.ws.rs-api</artifactId>
       <version>[2.1.1,2.99.99)</version>
       <scope>provided</scope>
-      <optional>true</optional>
     </dependency>
 
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>2.3.3</version>
+      <scope>provided</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -109,8 +114,21 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.1.2</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.2.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M5</version>
+        <configuration>
+          <debugForkedProcess>true</debugForkedProcess>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -161,77 +179,6 @@
         </dependency>
       </dependencies>
     </profile>
-
-    <profile>
-      <id>cxf-fix</id>
-      <dependencyManagement>
-        <dependencies>
-          <!-- JAX-RS client implementation. -->
-          <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-rs-client</artifactId>
-            <version>3.4.1</version>
-            <scope>test</scope>
-            <exclusions>
-              <exclusion>
-                <groupId>jakarta.xml.bind</groupId>
-                <artifactId>jakarta.xml.bind-api</artifactId>
-              </exclusion>
-            </exclusions>
-          </dependency>
-        </dependencies>
-      </dependencyManagement>
-      <dependencies>
-        <dependency>
-          <groupId>javax.xml.bind</groupId>
-          <artifactId>jaxb-api</artifactId>
-          <version>2.3.1</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-
-    <profile>
-      <id>jersey-fix</id>
-      <dependencies>
-        <dependency>
-          <groupId>javax.xml.bind</groupId>
-          <artifactId>jaxb-api</artifactId>
-          <version>2.3.1</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-
-    <profile>
-      <id>resteasy-fix</id>
-      <dependencyManagement>
-        <dependencies>
-          <!-- JAX-RS client implementation. -->
-          <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
-            <version>${resteasy.version}</version>
-            <scope>test</scope>
-            <exclusions>
-              <exclusion>
-                <groupId>org.jboss.spec.javax.xml.bind</groupId>
-                <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
-              </exclusion>
-            </exclusions>
-          </dependency>
-        </dependencies>
-      </dependencyManagement>
-      <dependencies>
-        <dependency>
-          <groupId>javax.xml.bind</groupId>
-          <artifactId>jaxb-api</artifactId>
-          <version>2.3.1</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-
   </profiles>
 
 </project>

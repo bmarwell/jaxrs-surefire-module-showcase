@@ -1,6 +1,7 @@
 = JAX-RS test clients showcase
 
-This demo project shows how messed up all jax-rs clients actually are :)
+This demo originally showed how to use a jax-rs-client in a unit test.
+But then I ran into a compiler issue :)
 
 == Prerequisites
 
@@ -12,11 +13,11 @@ Understanding of the JAX-RS API. It is just an API, which can be implemented by:
 
 == What this demo shows
 
-None of the libraries run well in a modular test environment.
-CXF and Resteasy needs exclusions of their default jakarta/whatever *.xml.bind-api.
-All three of them need a new bind-api implementation.
+Compiler plugn fails test-compiling due to modulepath problems.
 
 == How to run this demo
+
+You *must* use a Profile: `cxf` or `jersey` or `resteasy`!
 
 === Running with Apache CXF
 
@@ -24,10 +25,6 @@ All three of them need a new bind-api implementation.
 ----
 $ mvn verify -Pcxf
 ## fails
-
-$ mvn verify -Pcxf,cxf-fix
-## removes shipped jakarta.xml.bind:jakarta.xml.bind-api, adds javax.xml.bind:jaxb-api
-## works
 ----
 
 === Running with Eclipse Jersey
@@ -36,10 +33,6 @@ $ mvn verify -Pcxf,cxf-fix
 ----
 $ mvn verify -Pjersey
 ## fails
-
-$ mvn verify -Pjersey,jersey-fix
-## adds javax.xml.bind:jaxb-api
-## works
 ----
 
 === Running with JBoss Resteasy
@@ -48,10 +41,6 @@ $ mvn verify -Pjersey,jersey-fix
 ----
 $ mvn verify -Pcxf
 ## fails
-
-$ mvn verify -Pcxf,cxf-fix
-## removes shipped org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.3_spec module, adds javax.xml.bind:jaxb-api
-## works
 ----
 
 == Error message
@@ -60,14 +49,122 @@ For all three profiles:
 
 [source,maven]
 ----
-[ERROR] java.lang.module.FindException: Module java.activation not found, required by java.xml.bind
-[ERROR]         at java.base/java.lang.module.Resolver.findFail(Resolver.java:877)
-[ERROR]         at java.base/java.lang.module.Resolver.resolve(Resolver.java:191)
-[ERROR]         at java.base/java.lang.module.Resolver.resolve(Resolver.java:140)
-[ERROR]         at java.base/java.lang.module.Configuration.resolveAndBind(Configuration.java:315)
-[ERROR]         at java.base/java.lang.module.ModuleDescriptor$1.resolveAndBind(ModuleDescriptor.java:2693)
-[ERROR]         at java.base/jdk.internal.module.ModuleBootstrap.boot(ModuleBootstrap.java:354)
-[ERROR]         at java.base/java.lang.ClassLoader.initializeClassLoaders(ClassLoader.java:211)
-[ERROR]         at java.base/java.lang.Thread.initialize(Thread.java:430)
-[ERROR]         at java.base/java.lang.Thread.<init>(Thread.java:155)
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR :
+[INFO] -------------------------------------------------------------
+[ERROR] module not found: jakarta.activation
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.146 s
+[INFO] Finished at: 2020-12-11T15:12:38+01:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.8.1:testCompile (default-testCompile) on project surefire-module-test: Compilation failure
+[ERROR] module not found: jakarta.activation
+----
+
+More details what the compiler plugin finds in the `test-compile` step:
+
+[source,log]
+----
+[DEBUG] Using compiler 'javac'.
+[DEBUG] Adding $HOME/git/jaxrs-surefire-module-showcase/target/generated-test-sources/test-annotations to test-compile source roots:
+$HOME/git/jaxrs-surefire-module-showcase/src/test/java
+[DEBUG] New test-compile source roots:
+$HOME/git/jaxrs-surefire-module-showcase/src/test/java
+$HOME/git/jaxrs-surefire-module-showcase/target/generated-test-sources/test-annotations
+[DEBUG] CompilerReuseStrategy: reuseCreated
+[DEBUG] useIncrementalCompilation enabled
+[WARNING] Can't extract module name from geronimo-jta_1.1_spec-1.1.1.jar: geronimo.jta.1.1.spec: Invalid module name: '1' is not a Java identifier
+[DEBUG] New dependency detected: $HOME/git/jaxrs-surefire-module-showcase/target/classes
+[INFO] Changes detected - recompiling the module!
+[DEBUG] Classpath:
+[DEBUG]  $HOME/git/jaxrs-surefire-module-showcase/target/test-classes
+[DEBUG]  $HOME/.m2/repository/jakarta/activation/jakarta.activation-api/1.2.2/jakarta.activation-api-1.2.2.jar
+[DEBUG]  $HOME/.m2/repository/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar
+[DEBUG]  $HOME/.m2/repository/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar
+[DEBUG]  $HOME/.m2/repository/org/mockito/mockito-core/3.6.28/mockito-core-3.6.28.jar
+[DEBUG]  $HOME/.m2/repository/net/bytebuddy/byte-buddy/1.10.18/byte-buddy-1.10.18.jar
+[DEBUG]  $HOME/.m2/repository/net/bytebuddy/byte-buddy-agent/1.10.18/byte-buddy-agent-1.10.18.jar
+[DEBUG]  $HOME/.m2/repository/org/objenesis/objenesis/3.1/objenesis-3.1.jar
+[DEBUG]  $HOME/.m2/repository/org/junit/jupiter/junit-jupiter/5.7.0/junit-jupiter-5.7.0.jar
+[DEBUG]  $HOME/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.7.0/junit-jupiter-api-5.7.0.jar
+[DEBUG]  $HOME/.m2/repository/org/apiguardian/apiguardian-api/1.1.0/apiguardian-api-1.1.0.jar
+[DEBUG]  $HOME/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar
+[DEBUG]  $HOME/.m2/repository/org/junit/platform/junit-platform-commons/1.7.0/junit-platform-commons-1.7.0.jar
+[DEBUG]  $HOME/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.7.0/junit-jupiter-params-5.7.0.jar
+[DEBUG]  $HOME/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.7.0/junit-jupiter-engine-5.7.0.jar
+[DEBUG]  $HOME/.m2/repository/org/junit/platform/junit-platform-engine/1.7.0/junit-platform-engine-1.7.0.jar
+[DEBUG]  $HOME/.m2/repository/org/hamcrest/hamcrest-library/2.2/hamcrest-library-2.2.jar
+[DEBUG]  $HOME/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar
+[DEBUG]  $HOME/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar
+[DEBUG]  $HOME/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.12.0/jackson-datatype-jdk8-2.12.0.jar
+[DEBUG]  $HOME/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.12.0/jackson-datatype-jsr310-2.12.0.jar
+[DEBUG]  $HOME/.m2/repository/com/github/tomakehurst/wiremock/2.27.2/wiremock-2.27.2.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-server/9.2.28.v20190418/jetty-server-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-http/9.2.28.v20190418/jetty-http-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-io/9.2.28.v20190418/jetty-io-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-servlet/9.2.28.v20190418/jetty-servlet-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-security/9.2.28.v20190418/jetty-security-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-servlets/9.2.28.v20190418/jetty-servlets-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-continuation/9.2.28.v20190418/jetty-continuation-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-util/9.2.28.v20190418/jetty-util-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-webapp/9.2.28.v20190418/jetty-webapp-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-xml/9.2.28.v20190418/jetty-xml-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-proxy/9.2.28.v20190418/jetty-proxy-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/org/eclipse/jetty/jetty-client/9.2.28.v20190418/jetty-client-9.2.28.v20190418.jar
+[DEBUG]  $HOME/.m2/repository/com/google/guava/guava/20.0/guava-20.0.jar
+[DEBUG]  $HOME/.m2/repository/org/apache/httpcomponents/httpclient/4.5.12/httpclient-4.5.12.jar
+[DEBUG]  $HOME/.m2/repository/org/apache/httpcomponents/httpcore/4.4.13/httpcore-4.4.13.jar
+[DEBUG]  $HOME/.m2/repository/commons-logging/commons-logging/1.2/commons-logging-1.2.jar
+[DEBUG]  $HOME/.m2/repository/commons-codec/commons-codec/1.11/commons-codec-1.11.jar
+[DEBUG]  $HOME/.m2/repository/org/xmlunit/xmlunit-core/2.7.0/xmlunit-core-2.7.0.jar
+[DEBUG]  $HOME/.m2/repository/org/xmlunit/xmlunit-legacy/2.7.0/xmlunit-legacy-2.7.0.jar
+[DEBUG]  $HOME/.m2/repository/org/xmlunit/xmlunit-placeholders/2.7.0/xmlunit-placeholders-2.7.0.jar
+[DEBUG]  $HOME/.m2/repository/com/jayway/jsonpath/json-path/2.4.0/json-path-2.4.0.jar
+[DEBUG]  $HOME/.m2/repository/net/minidev/json-smart/2.3/json-smart-2.3.jar
+[DEBUG]  $HOME/.m2/repository/net/minidev/accessors-smart/1.2/accessors-smart-1.2.jar
+[DEBUG]  $HOME/.m2/repository/org/ow2/asm/asm/7.0/asm-7.0.jar
+[DEBUG]  $HOME/.m2/repository/net/sf/jopt-simple/jopt-simple/5.0.3/jopt-simple-5.0.3.jar
+[DEBUG]  $HOME/.m2/repository/org/apache/commons/commons-lang3/3.7/commons-lang3-3.7.jar
+[DEBUG]  $HOME/.m2/repository/com/github/jknack/handlebars/4.0.7/handlebars-4.0.7.jar
+[DEBUG]  $HOME/.m2/repository/org/antlr/antlr4-runtime/4.7.1/antlr4-runtime-4.7.1.jar
+[DEBUG]  $HOME/.m2/repository/com/github/jknack/handlebars-helpers/4.0.7/handlebars-helpers-4.0.7.jar
+[DEBUG]  $HOME/.m2/repository/com/flipkart/zjsonpatch/zjsonpatch/0.4.4/zjsonpatch-0.4.4.jar
+[DEBUG]  $HOME/.m2/repository/commons-fileupload/commons-fileupload/1.4/commons-fileupload-1.4.jar
+[DEBUG]  $HOME/.m2/repository/commons-io/commons-io/2.2/commons-io-2.2.jar
+[DEBUG]  $HOME/.m2/repository/ru/lanwen/wiremock/wiremock-junit5/1.3.1/wiremock-junit5-1.3.1.jar
+[DEBUG]  $HOME/.m2/repository/org/apache/cxf/cxf-rt-rs-client/3.4.1/cxf-rt-rs-client-3.4.1.jar
+[DEBUG]  $HOME/.m2/repository/org/apache/cxf/cxf-rt-transports-http/3.4.1/cxf-rt-transports-http-3.4.1.jar
+[DEBUG]  $HOME/.m2/repository/org/apache/cxf/cxf-core/3.4.1/cxf-core-3.4.1.jar
+[DEBUG]  $HOME/.m2/repository/org/glassfish/jaxb/jaxb-runtime/2.3.3/jaxb-runtime-2.3.3.jar
+[DEBUG]  $HOME/.m2/repository/org/glassfish/jaxb/txw2/2.3.3/txw2-2.3.3.jar
+[DEBUG]  $HOME/.m2/repository/com/sun/istack/istack-commons-runtime/3.0.11/istack-commons-runtime-3.0.11.jar
+[DEBUG]  $HOME/.m2/repository/com/fasterxml/woodstox/woodstox-core/6.2.1/woodstox-core-6.2.1.jar
+[DEBUG]  $HOME/.m2/repository/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar
+[DEBUG]  $HOME/.m2/repository/org/apache/ws/xmlschema/xmlschema-core/2.2.5/xmlschema-core-2.2.5.jar
+[DEBUG]  $HOME/.m2/repository/org/apache/cxf/cxf-rt-frontend-jaxrs/3.4.1/cxf-rt-frontend-jaxrs-3.4.1.jar
+[DEBUG]  $HOME/.m2/repository/org/apache/cxf/cxf-rt-security/3.4.1/cxf-rt-security-3.4.1.jar
+[DEBUG]  $HOME/.m2/repository/jakarta/annotation/jakarta.annotation-api/1.3.5/jakarta.annotation-api-1.3.5.jar
+[DEBUG]  $HOME/.m2/repository/jakarta/xml/ws/jakarta.xml.ws-api/2.3.3/jakarta.xml.ws-api-2.3.3.jar
+[DEBUG]  $HOME/.m2/repository/jakarta/jws/jakarta.jws-api/2.1.0/jakarta.jws-api-2.1.0.jar
+[DEBUG]  $HOME/.m2/repository/jakarta/xml/soap/jakarta.xml.soap-api/1.4.2/jakarta.xml.soap-api-1.4.2.jar
+[DEBUG]  $HOME/.m2/repository/com/sun/activation/jakarta.activation/1.2.2/jakarta.activation-1.2.2.jar
+[DEBUG]  $HOME/.m2/repository/com/sun/xml/messaging/saaj/saaj-impl/1.5.2/saaj-impl-1.5.2.jar
+[DEBUG]  $HOME/.m2/repository/org/jvnet/staxex/stax-ex/1.8.3/stax-ex-1.8.3.jar
+[DEBUG]  $HOME/.m2/repository/org/jboss/spec/javax/rmi/jboss-rmi-api_1.0_spec/1.0.6.Final/jboss-rmi-api_1.0_spec-1.0.6.Final.jar
+[DEBUG] Modulepath:
+[DEBUG]  $HOME/git/jaxrs-surefire-module-showcase/target/classes
+[DEBUG]  $HOME/.m2/repository/jakarta/ws/rs/jakarta.ws.rs-api/2.1.6/jakarta.ws.rs-api-2.1.6.jar
+[DEBUG]  $HOME/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/2.3.3/jakarta.xml.bind-api-2.3.3.jar
+[DEBUG]  $HOME/.m2/repository/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.jar
+[DEBUG]  $HOME/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.12.0/jackson-core-2.12.0.jar
+[DEBUG]  $HOME/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.12.0/jackson-annotations-2.12.0.jar
+[DEBUG]  $HOME/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.12.0/jackson-databind-2.12.0.jar
+[DEBUG] Source roots:
+[DEBUG]  $HOME/git/jaxrs-surefire-module-showcase/src/test/java
+[DEBUG]  $HOME/git/jaxrs-surefire-module-showcase/target/generated-test-sources/test-annotations
 ----
