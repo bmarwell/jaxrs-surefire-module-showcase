@@ -1,0 +1,73 @@
+= JAX-RS test clients showcase
+
+This demo project shows how messed up all jax-rs clients actually are :)
+
+== Prerequisites
+
+Understanding of the JAX-RS API. It is just an API, which can be implemented by:
+
+* JBoss Resteasy
+* Apache CXF
+* Eclipse Jersey + Eclipse HK2 (DI framework)
+
+== What this demo shows
+
+None of the libraries run well in a modular test environment.
+CXF and Resteasy needs exclusions of their default jakarta/whatever *.xml.bind-api.
+All three of them need a new bind-api implementation.
+
+== How to run this demo
+
+=== Running with Apache CXF
+
+[source,bash]
+----
+$ mvn verify -Pcxf
+## fails
+
+$ mvn verify -Pcxf,cxf-fix
+## removes shipped jakarta.xml.bind:jakarta.xml.bind-api, adds javax.xml.bind:jaxb-api
+## works
+----
+
+=== Running with Eclipse Jersey
+
+[source,bash]
+----
+$ mvn verify -Pjersey
+## fails
+
+$ mvn verify -Pjersey,jersey-fix
+## adds javax.xml.bind:jaxb-api
+## works
+----
+
+=== Running with JBoss Resteasy
+
+[source,bash]
+----
+$ mvn verify -Pcxf
+## fails
+
+$ mvn verify -Pcxf,cxf-fix
+## removes shipped org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.3_spec module, adds javax.xml.bind:jaxb-api
+## works
+----
+
+== Error message
+
+For all three profiles:
+
+[source,maven]
+----
+[ERROR] java.lang.module.FindException: Module java.activation not found, required by java.xml.bind
+[ERROR]         at java.base/java.lang.module.Resolver.findFail(Resolver.java:877)
+[ERROR]         at java.base/java.lang.module.Resolver.resolve(Resolver.java:191)
+[ERROR]         at java.base/java.lang.module.Resolver.resolve(Resolver.java:140)
+[ERROR]         at java.base/java.lang.module.Configuration.resolveAndBind(Configuration.java:315)
+[ERROR]         at java.base/java.lang.module.ModuleDescriptor$1.resolveAndBind(ModuleDescriptor.java:2693)
+[ERROR]         at java.base/jdk.internal.module.ModuleBootstrap.boot(ModuleBootstrap.java:354)
+[ERROR]         at java.base/java.lang.ClassLoader.initializeClassLoaders(ClassLoader.java:211)
+[ERROR]         at java.base/java.lang.Thread.initialize(Thread.java:430)
+[ERROR]         at java.base/java.lang.Thread.<init>(Thread.java:155)
+----
